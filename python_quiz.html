@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Python Quiz (20 questions)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    /* Simple, clean styles for beginners */
+    body {
+      font-family: Arial, sans-serif;
+      background:#f6f8fa;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      min-height:100vh;
+    }
+    .quiz {
+      width:100%;
+      max-width:700px;
+      background:#fff;
+      border-radius:12px;
+      padding:22px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    }
+    h1 { font-size:20px; margin:0 0 12px; }
+    #question { margin: 10px 0 18px; font-weight:600; }
+    .option {
+      background:#eef2f6;
+      padding:10px 12px;
+      margin:8px 0;
+      border-radius:8px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .option.correct { background:#dff0d8; }
+    .option.wrong   { background:#f8d7da; }
+    #explanation { margin-top:12px; font-size:14px; color:#333; min-height:20px; }
+    .controls { margin-top:16px; display:flex; gap:10px; align-items:center; }
+    button {
+      padding:10px 14px;
+      border-radius:8px;
+      border: none;
+      cursor:pointer;
+    }
+    #next-btn { background:#007bff; color:#fff; display:none; }
+    #restart-btn { background:#28a745; color:#fff; display:none; }
+    #score { margin-top:14px; font-weight:600; }
+    .meta { font-size:13px; color:#666; margin-top:6px; }
+  </style>
+</head>
+<body>
+  <div class="quiz">
+    <h1>Python Quiz — 20 Questions</h1>
+    <div id="progress" class="meta">Question <span id="current-num">1</span> of <span id="total-num">20</span></div>
+    <div id="question"></div>
+    <div id="options"></div>
+    <div id="explanation"></div>
+
+    <div class="controls">
+      <button id="next-btn">Next ➜</button>
+      <button id="restart-btn">Restart Quiz</button>
+      <div style="flex:1"></div>
+      <div id="score"></div>
+    </div>
+  </div>
+
+<script>
+/*
+  QUESTIONS: Change or add questions here.
+  Each object has:
+    - q: the question text
+    - options: array of choices
+    - answer: index (0-based) of the correct option
+    - explanation: short text explaining the answer
+*/
+const questions = [
+  { q: "Which keyword is used to define a function in Python?",
+    options: ["function","def","func","define"],
+    answer: 1,
+    explanation: "Use the keyword `def` to define a function in Python, for example: def my_func():"
+  },
+  { q: "What is the output of print(2 ** 3)?",
+    options: ["6","8","9","12"],
+    answer: 1,
+    explanation: "`**` is the exponent operator; 2 ** 3 = 8."
+  },
+  { q: "Which data type is immutable in Python?",
+    options: ["List","Tuple","Dictionary","Set"],
+    answer: 1,
+    explanation: "Tuples are immutable (cannot be changed) while lists are mutable."
+  },
+  { q: "Which function is used to find the length of a list?",
+    options: ["size()","count()","len()","length()"],
+    answer: 2,
+    explanation: "Use `len(my_list)` to get the number of items."
+  },
+  { q: "What is the correct file extension for Python files?",
+    options: [".pt",".py",".pyt",".p"],
+    answer: 1,
+    explanation: "Python source files use the `.py` extension."
+  },
+  { q: "Which of the following is a Python loop?",
+    options: ["repeat","for","iterate","foreach"],
+    answer: 1,
+    explanation: "Python has `for` and `while` loops; `for` is commonly used to iterate over items."
+  },
+  { q: "What does input() return by default?",
+    options: ["Integer","String","Float","Boolean"],
+    answer: 1,
+    explanation: "`input()` always returns a string. Convert with int() or float() if needed."
+  },
+  { q: "Which symbol is used for comments in Python?",
+    options: ["//","#","/* */","--"],
+    answer: 1,
+    explanation: "Single-line comments start with `#`. Multi-line comments typically use triple quotes."
+  },
+  { q: "Which keyword is used for exception handling?",
+    options: ["error","try","catch","throw"],
+    answer: 1,
+    explanation: "Use `try` with `except` blocks for exception handling (try/except)."
+  },
+  { q: "What is the output of print(type([]))?",
+    options: ["<class 'tuple'>","<class 'list'>","<class 'set'>","<class 'dict'>"],
+    answer: 1,
+    explanation: "Square brackets `[]` create a list; its type is `list`."
+  },
+  { q: "Which function is used to display output in Python?",
+    options: ["display()","echo()","print()","show()"],
+    answer: 2,
+    explanation: "Use `print()` to show output on the console."
+  },
+  { q: "What is the correct syntax for defining a class?",
+    options: ["class Car:","Car class:","class = Car()","class(Car)"],
+    answer: 0,
+    explanation: "Define classes with `class ClassName:` (e.g., class Car:)."
+  },
+  { q: "Which operator is used for floor division?",
+    options: ["/","//","%","**"],
+    answer: 1,
+    explanation: "`//` returns the integer (floor) division result, e.g., 7 // 2 = 3."
+  },
+  { q: "Which module is used for random numbers?",
+    options: ["math","random","numbers","statistics"],
+    answer: 1,
+    explanation: "Import the `random` module to generate random numbers: import random"
+  },
+  { q: "Which keyword stops a loop?",
+    options: ["stop","exit","break","return"],
+    answer: 2,
+    explanation: "`break` exits the nearest loop immediately."
+  },
+  { q: "What is the default value of an uninitialized variable in Python?",
+    options: ["0","null","None","undefined"],
+    answer: 2,
+    explanation: "Python uses `None` as the null-like value. (Note: using a truly unassigned variable causes a NameError.)"
+  },
+  { q: "Which data structure uses key-value pairs?",
+    options: ["List","Tuple","Dictionary","Set"],
+    answer: 2,
+    explanation: "Dictionaries store key:value pairs, e.g., {'name':'Alice'}."
+  },
+  { q: "Which keyword creates a generator?",
+    options: ["yield","generate","return","produce"],
+    answer: 0,
+    explanation: "A function with `yield` becomes a generator and yields values lazily."
+  },
+  { q: "What is the output of print('Hello' * 3)?",
+    options: ["HelloHelloHello","Error","Hello3","3Hello"],
+    answer: 0,
+    explanation: "String multiplication repeats text: 'Hello' * 3 => 'HelloHelloHello'."
+  },
+  { q: "Which function converts string to integer?",
+    options: ["str()","float()","int()","bool()"],
+    answer: 2,
+    explanation: "`int('123')` converts the string '123' to the integer 123."
+  }
+];
+
+// --- quiz state ---
+let current = 0;
+let score = 0;
+
+// --- DOM references ---
+const totalNumEl = document.getElementById('total-num');
+const currentNumEl = document.getElementById('current-num');
+const questionEl = document.getElementById('question');
+const optionsEl = document.getElementById('options');
+const explanationEl = document.getElementById('explanation');
+const nextBtn = document.getElementById('next-btn');
+const restartBtn = document.getElementById('restart-btn');
+const scoreEl = document.getElementById('score');
+
+totalNumEl.textContent = questions.length;
+
+// Load the first question
+function loadQuestion() {
+  explanationEl.textContent = '';
+  nextBtn.style.display = 'none';
+  const q = questions[current];
+  currentNumEl.textContent = current + 1;
+  questionEl.textContent = q.q;
+  optionsEl.innerHTML = ''; // clear previous options
+
+  q.options.forEach((opt, idx) => {
+    const div = document.createElement('div');
+    div.className = 'option';
+    div.textContent = opt;
+    // on click choose answer
+    div.addEventListener('click', () => handleAnswer(div, idx));
+    optionsEl.appendChild(div);
+  });
+}
+
+// When user selects an answer
+function handleAnswer(divClicked, idx) {
+  const q = questions[current];
+  // prevent clicking again
+  const all = optionsEl.querySelectorAll('.option');
+  all.forEach(el => el.style.pointerEvents = 'none');
+
+  if (idx === q.answer) {
+    divClicked.classList.add('correct');
+    score++;
+  } else {
+    divClicked.classList.add('wrong');
+    // highlight the correct option
+    all[q.answer].classList.add('correct');
+  }
+
+  // show explanation
+  explanationEl.textContent = q.explanation || '';
+  nextBtn.style.display = 'inline-block';
+  updateScoreDisplay();
+}
+
+// update running score display
+function updateScoreDisplay() {
+  scoreEl.textContent = `Score: ${score} / ${questions.length}`;
+}
+
+// next button
+nextBtn.addEventListener('click', () => {
+  current++;
+  if (current < questions.length) {
+    loadQuestion();
+  } else {
+    finishQuiz();
+  }
+});
+
+// finish
+function finishQuiz() {
+  questionEl.textContent = 'Quiz Completed!';
+  optionsEl.innerHTML = '';
+  explanationEl.textContent = `You scored ${score} out of ${questions.length}.`;
+  nextBtn.style.display = 'none';
+  restartBtn.style.display = 'inline-block';
+  updateScoreDisplay();
+}
+
+// restart
+restartBtn.addEventListener('click', () => {
+  current = 0;
+  score = 0;
+  restartBtn.style.display = 'none';
+  loadQuestion();
+  updateScoreDisplay();
+});
+
+// initial load
+loadQuestion();
+updateScoreDisplay();
+</script>
+</body>
+</html>
